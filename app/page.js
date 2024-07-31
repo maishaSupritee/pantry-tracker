@@ -17,10 +17,16 @@ import { CiEdit } from "react-icons/ci";
 import TransitionsModal from "./modal";
 
 export default function Home() {
-  const [newItem, setNewItem] = useState({ name: "", quantity: 1 });
+  const [newItem, setNewItem] = useState({ name: "", quantity: 1, expiry: "" });
   const [items, setItems] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  //use to store errors
+  const [errors, setErrors] = useState({
+    name: "",
+    quantity: "",
+    expiry: "",
+  });
 
   //passing in a dependancy array to prevent infinite renders. so only renders once
   useEffect(() => {
@@ -40,6 +46,41 @@ export default function Home() {
   const handleEditItem = (editedItem) => {
     updateItem(editedItem);
     handleCloseModal();
+  };
+
+  //ensure each field in the edit form is valid
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { name: "", quantity: "", expiry: "" };
+
+    if (!newItem.name.trim()) {
+      newErrors.name = "Name is required";
+      isValid = false;
+    }
+
+    if (newItem.quantity < 1) {
+      newErrors.quantity = "Quantity must be at least 1";
+      isValid = false;
+    }
+
+    if (newItem.expiry) {
+      const currentDate = new Date().toISOString().split("T")[0];
+      if (newItem.expiry < currentDate) {
+        newErrors.expiry = "Expiry date cannot be in the past";
+        isValid = false;
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      //if all fields valid only add new item then
+      addItem(e, newItem, setNewItem);
+    }
   };
 
   return (
@@ -71,7 +112,7 @@ export default function Home() {
       </Typography>
       <Box
         component="form"
-        onSubmit={(e) => addItem(e, newItem, setNewItem)}
+        onSubmit={handleSubmit}
         sx={{
           display: "flex",
           flexDirection: { xs: "column", sm: "row" },
@@ -87,7 +128,7 @@ export default function Home() {
           spacing={2}
           sx={{ mb: { xs: 2, sm: 0 }, alignItems: "center" }}
         >
-          <Grid item xs={12} sm={8}>
+          <Grid item xs={12} sm={6}>
             <TextField
               sx={{
                 "& .MuiOutlinedInput-root": {
@@ -108,9 +149,11 @@ export default function Home() {
               name="itemName"
               required
               placeholder="Enter item"
+              error={!!errors.name} //change the field and label to error state
+              helperText={errors.name} //display error message
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={2}>
             <TextField
               sx={{
                 "& .MuiOutlinedInput-root": {
@@ -133,6 +176,39 @@ export default function Home() {
               id="itemQuantity"
               name="itemQuantity"
               placeholder="Enter quantity"
+              error={!!errors.quantity}
+              helperText={errors.quantity}
+              inputProps={{ min: 1 }} //quantity must be at least 1
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "secondary.100",
+                  borderRadius: "10px",
+                  "& fieldset": {
+                    borderColor: "secondary.100",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "tertiary.main",
+                  },
+                },
+              }}
+              fullWidth
+              value={newItem.expiry}
+              onChange={(e) => {
+                setNewItem({ ...newItem, expiry: e.target.value });
+              }}
+              type="date"
+              id="itemExpiry"
+              name="itemExpiry"
+              placeholder="Expiry Date"
+              error={!!errors.expiry}
+              helperText={errors.expiry}
+              inputProps={{
+                min: new Date().toISOString().split("T")[0], //date can only be today or later
+              }}
             />
           </Grid>
         </Grid>

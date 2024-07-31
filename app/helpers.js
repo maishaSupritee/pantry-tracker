@@ -18,8 +18,9 @@ export const addItem = async (e, newItem, setNewItem) => {
     await addDoc(collection(db, "items"), {
       name: newItem.name.trim(),
       quantity: newItem.quantity,
+      expiry: newItem.expiry,
     });
-    setNewItem({ name: "", quantity: 1 });
+    setNewItem({ name: "", quantity: 1, expiry: "" });
   }
 };
 
@@ -52,5 +53,6 @@ export const updateItem = async (item) => {
   await updateDoc(itemRef, {
     name: item.name,
     quantity: item.quantity,
+    expiry: item.expiry,
   });
 };
