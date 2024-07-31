@@ -12,16 +12,35 @@ import {
 import { IoAdd } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import { useEffect, useState } from "react";
-import { addItem, getItems, deleteItem } from "./helpers";
+import { addItem, getItems, deleteItem, updateItem } from "./helpers";
+import { CiEdit } from "react-icons/ci";
+import TransitionsModal from "./modal";
 
 export default function Home() {
   const [newItem, setNewItem] = useState({ name: "", quantity: 1 });
   const [items, setItems] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
   //passing in a dependancy array to prevent infinite renders. so only renders once
   useEffect(() => {
     getItems(setItems);
   }, []);
+
+  const handleOpenModal = (item) => {
+    setEditingItem(item); //pass the current item to be edited
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setEditingItem(null); //no item being edited when modal closes
+  };
+
+  const handleEditItem = (editedItem) => {
+    updateItem(editedItem);
+    handleCloseModal();
+  };
 
   return (
     <Box
@@ -134,52 +153,76 @@ export default function Home() {
       </Box>
 
       <Box sx={{ width: "100%", maxWidth: "600px" }}>
-        {items.map((item, id) => (
-          <Paper
-            elevation={6}
-            key={id}
+        {items.map((item) => (
+          <Box
+            key={item.id}
             sx={{
               display: "flex",
               flexDirection: "row",
-              justifyContent: "space-between",
+              gap: 2,
               alignItems: "center",
-              width: "100%",
-              p: 2,
-              mb: 2,
-              bgcolor: "secondary.main",
             }}
           >
-            <Typography
-              variant="h6"
-              color="primary.main"
+            <Paper
+              elevation={6}
               sx={{
-                wordBreak: "break-word",
-                flexGrow: 1,
-                mr: 2,
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
+                p: 2,
+                mb: 2,
+                bgcolor: "secondary.main",
               }}
             >
-              {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-            </Typography>
-            <Typography
-              variant="h6"
-              color="primary.main"
-              sx={{
-                mr: 2,
-                flexShrink: 0,
-              }}
-            >
-              {item.quantity}
-            </Typography>
+              <Typography
+                variant="h6"
+                color="primary.main"
+                sx={{
+                  wordBreak: "break-word",
+                  flexGrow: 1,
+                  mr: 2,
+                }}
+              >
+                {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+              </Typography>
+              <Typography
+                variant="h6"
+                color="primary.main"
+                sx={{
+                  mr: 2,
+                  flexShrink: 0,
+                }}
+              >
+                {item.quantity}
+              </Typography>
+              <IconButton
+                aria-label="delete"
+                sx={{ flexShrink: 0 }}
+                onClick={() => deleteItem(item.id)}
+              >
+                <MdDelete />
+              </IconButton>
+            </Paper>
+
             <IconButton
-              aria-label="delete"
-              sx={{ flexShrink: 0 }}
-              onClick={() => deleteItem(item.id)}
+              size="large"
+              sx={{ borderRadius: "100%", height: "80%" }}
+              onClick={() => handleOpenModal(item)}
             >
-              <MdDelete />
+              <CiEdit />
             </IconButton>
-          </Paper>
+          </Box>
         ))}
       </Box>
+
+      <TransitionsModal
+        open={modalOpen}
+        handleClose={handleCloseModal}
+        item={editingItem}
+        handleEdit={handleEditItem}
+      />
     </Box>
   );
 }
