@@ -11,16 +11,18 @@ import {
 } from "@mui/material";
 import { IoAdd } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
-import { useState } from "react";
-import { addItem } from "./helpers";
+import { useEffect, useState } from "react";
+import { addItem, getItems } from "./helpers";
 
 export default function Home() {
   const [newItem, setNewItem] = useState({ name: "", quantity: 1 });
-  const [items, setItems] = useState([
-    { name: "milk", quantity: 1 },
-    { name: "eggs", quantity: 100 },
-    { name: "juice", quantity: 23 },
-  ]);
+  const [items, setItems] = useState([]);
+
+  //passing in a dependancy array to prevent infinite renders. so only renders once
+  useEffect(() => {
+    const unsubscribe = getItems(setItems);
+    return () => unsubscribe();
+  }, []);
 
   return (
     <Box
@@ -108,7 +110,6 @@ export default function Home() {
               type="number"
               id="itemQuantity"
               name="itemQuantity"
-              defaultValue={1}
               placeholder="Enter quantity"
             />
           </Grid>
