@@ -252,17 +252,24 @@ export default function Home() {
                 bgcolor: "secondary.main",
               }}
             >
-              <Typography
-                variant="h6"
-                color="primary.main"
-                sx={{
-                  wordBreak: "break-word",
-                  flexGrow: 1,
-                  mr: 2,
-                }}
+              <Box
+                sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
               >
-                {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-              </Typography>
+                <Typography
+                  variant="h6"
+                  color="primary.main"
+                  sx={{
+                    wordBreak: "break-word",
+                    mr: 2,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                </Typography>
+                <Typography fontSize="xs" color="primary.main">
+                  Expiry: {item.expiry !== "" ? item.expiry : "N/A"}
+                </Typography>
+              </Box>
               <Typography
                 variant="h6"
                 color="primary.main"
