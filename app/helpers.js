@@ -5,6 +5,8 @@ import {
   querySnapshot,
   query,
   onSnapshot,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
 import { db } from "@/firebase.js";
 
@@ -39,3 +41,6 @@ export const getItems = async (setItems) => {
 };
 
 //delete items from the database
+export const deleteItem = async (id) => {
+  await deleteDoc(doc(db, "items", id));
+};

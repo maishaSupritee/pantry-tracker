@@ -12,7 +12,7 @@ import {
 import { IoAdd } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import { useEffect, useState } from "react";
-import { addItem, getItems } from "./helpers";
+import { addItem, getItems, deleteItem } from "./helpers";
 
 export default function Home() {
   const [newItem, setNewItem] = useState({ name: "", quantity: 1 });
@@ -20,8 +20,7 @@ export default function Home() {
 
   //passing in a dependancy array to prevent infinite renders. so only renders once
   useEffect(() => {
-    const unsubscribe = getItems(setItems);
-    return () => unsubscribe();
+    getItems(setItems);
   }, []);
 
   return (
@@ -64,7 +63,11 @@ export default function Home() {
           maxWidth: "600px",
         }}
       >
-        <Grid container spacing={2} sx={{ mb: { xs: 2, sm: 0 } }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ mb: { xs: 2, sm: 0 }, alignItems: "center" }}
+        >
           <Grid item xs={12} sm={8}>
             <TextField
               sx={{
@@ -167,7 +170,11 @@ export default function Home() {
             >
               {item.quantity}
             </Typography>
-            <IconButton aria-label="delete" sx={{ flexShrink: 0 }}>
+            <IconButton
+              aria-label="delete"
+              sx={{ flexShrink: 0 }}
+              onClick={() => deleteItem(item.id)}
+            >
               <MdDelete />
             </IconButton>
           </Paper>
