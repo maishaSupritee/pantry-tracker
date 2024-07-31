@@ -14,12 +14,14 @@ import { MdDelete } from "react-icons/md";
 import { useEffect, useState } from "react";
 import { addItem, getItems, deleteItem, updateItem } from "./helpers";
 import { CiEdit } from "react-icons/ci";
-import TransitionsModal from "./modal";
+import ReusableModal from "./modal";
+import CameraComponent from "./camera";
 
 export default function Home() {
   const [newItem, setNewItem] = useState({ name: "", quantity: 1, expiry: "" });
   const [items, setItems] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add"); // 'add' or 'edit'
   const [editingItem, setEditingItem] = useState(null);
   //use to store errors
   const [errors, setErrors] = useState({
@@ -33,8 +35,9 @@ export default function Home() {
     getItems(setItems);
   }, []);
 
-  const handleOpenModal = (item) => {
-    setEditingItem(item); //pass the current item to be edited
+  const handleOpenModal = (mode, item = null) => {
+    setModalMode(mode);
+    setEditingItem(item);
     setModalOpen(true);
   };
 
@@ -43,9 +46,28 @@ export default function Home() {
     setEditingItem(null); //no item being edited when modal closes
   };
 
+  //the addItem and updateItem functions now take a callback function where we are updating our list of items by using getItems
+  const handleAddItem = (newItem) => {
+    if (validateForm()) {
+      addItem(newItem, () => {
+        getItems(setItems); // Refresh the list after adding
+        handleCloseModal();
+      });
+    }
+  };
+
   const handleEditItem = (editedItem) => {
-    updateItem(editedItem);
-    handleCloseModal();
+    if (validateForm()) {
+      updateItem(editedItem, () => {
+        getItems(setItems); // Refresh the list after editing
+        handleCloseModal();
+      });
+    }
+  };
+
+  const handleTakePhoto = () => {
+    // Implement photo taking logic here
+    console.log("Taking photo...");
   };
 
   //ensure each field in the edit form is valid
@@ -75,14 +97,6 @@ export default function Home() {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      //if all fields valid only add new item then
-      addItem(e, newItem, setNewItem);
-    }
-  };
-
   return (
     <Box
       component="main"
@@ -110,116 +124,37 @@ export default function Home() {
       >
         Pantry Tracker
       </Typography>
+
       <Box
-        component="form"
-        onSubmit={handleSubmit}
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
+          flexDirection: "row",
+          gap: 4,
           alignItems: "center",
-          gap: 2,
-          mb: 3,
+          justifyContent: "center",
           width: "100%",
           maxWidth: "600px",
         }}
       >
-        <Grid
-          container
-          spacing={2}
-          sx={{ mb: { xs: 2, sm: 0 }, alignItems: "center" }}
+        <Typography
+          variant="h5"
+          sx={{
+            color: "secondary.main",
+            fontFamily: "Inter, sans-serif",
+          }}
         >
-          <Grid item xs={12} sm={6}>
-            <TextField
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  backgroundColor: "secondary.100",
-                  borderRadius: "10px",
-                  "& fieldset": {
-                    borderColor: "secondary.100",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "tertiary.main",
-                  },
-                },
-              }}
-              fullWidth
-              value={newItem.name}
-              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-              id="itemName"
-              name="itemName"
-              required
-              placeholder="Enter item"
-              error={!!errors.name} //change the field and label to error state
-              helperText={errors.name} //display error message
-            />
-          </Grid>
-          <Grid item xs={12} sm={2}>
-            <TextField
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  backgroundColor: "secondary.100",
-                  borderRadius: "10px",
-                  "& fieldset": {
-                    borderColor: "secondary.100",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "tertiary.main",
-                  },
-                },
-              }}
-              fullWidth
-              value={newItem.quantity}
-              onChange={(e) => {
-                setNewItem({ ...newItem, quantity: e.target.value });
-              }}
-              type="number"
-              id="itemQuantity"
-              name="itemQuantity"
-              placeholder="Enter quantity"
-              error={!!errors.quantity}
-              helperText={errors.quantity}
-              inputProps={{ min: 1 }} //quantity must be at least 1
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  backgroundColor: "secondary.100",
-                  borderRadius: "10px",
-                  "& fieldset": {
-                    borderColor: "secondary.100",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "tertiary.main",
-                  },
-                },
-              }}
-              fullWidth
-              value={newItem.expiry}
-              onChange={(e) => {
-                setNewItem({ ...newItem, expiry: e.target.value });
-              }}
-              type="date"
-              id="itemExpiry"
-              name="itemExpiry"
-              placeholder="Expiry Date"
-              error={!!errors.expiry}
-              helperText={errors.expiry}
-              inputProps={{
-                min: new Date().toISOString().split("T")[0], //date can only be today or later
-              }}
-            />
-          </Grid>
-        </Grid>
+          Add new item to your pantry
+        </Typography>
         <Button
           aria-label="add"
           variant="contained"
-          size="large"
-          type="submit"
+          onClick={() => handleOpenModal("add")}
           sx={{
-            minWidth: "56px",
-            height: "56px",
+            minWidth: "48px",
+            minHeight: "48px",
+            display: "flex",
+            justifyContent: "center", // Center icon horizontally
+            alignItems: "center",
             p: 0,
             borderRadius: "10px",
           }}
@@ -266,7 +201,12 @@ export default function Home() {
                 >
                   {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
                 </Typography>
-                <Typography fontSize="xs" color="primary.main">
+                <Typography
+                  color="primary.main"
+                  sx={{
+                    fontSize: "0.75rem",
+                  }}
+                >
                   Expiry: {item.expiry !== "" ? item.expiry : "N/A"}
                 </Typography>
               </Box>
@@ -291,8 +231,8 @@ export default function Home() {
 
             <IconButton
               size="large"
-              sx={{ borderRadius: "100%", height: "80%" }}
-              onClick={() => handleOpenModal(item)}
+              sx={{ borderRadius: "100%", height: "60%" }}
+              onClick={() => handleOpenModal("edit", item)}
             >
               <CiEdit />
             </IconButton>
@@ -300,11 +240,14 @@ export default function Home() {
         ))}
       </Box>
 
-      <TransitionsModal
+      <ReusableModal
         open={modalOpen}
         handleClose={handleCloseModal}
         item={editingItem}
-        handleEdit={handleEditItem}
+        handleSubmit={modalMode === "add" ? handleAddItem : handleEditItem}
+        title={modalMode === "add" ? "Add New Pantry Item" : "Edit Pantry Item"}
+        showPhotoButton={modalMode === "add"}
+        onTakePhoto={handleTakePhoto}
       />
     </Box>
   );

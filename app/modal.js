@@ -9,8 +9,17 @@ import Fade from "@mui/material/Fade";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import { FaCamera } from "react-icons/fa";
 
-const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
+const ReusableModal = ({
+  open,
+  handleClose,
+  item,
+  handleSubmit,
+  title,
+  showPhotoButton = false,
+  onTakePhoto,
+}) => {
   const theme = useTheme(); //useTheme gives us access to breakpoints to determine screen size
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); //checks if the screen is mobile or smaller than sm
 
@@ -22,6 +31,7 @@ const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
     width: isMobile ? "90%" : 400, //make the modal 90% width (smaller) on mobile and 400px on desktop
     maxWidth: "100%",
     bgcolor: "secondary.main",
+    borderRadius: 2,
     border: "2px solid tertiary.main",
     boxShadow: 24,
     p: isMobile ? 2 : 4, //less padding on mobile
@@ -29,11 +39,10 @@ const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
 
   const [editedItem, setEditedItem] = useState({
     name: "",
-    quantity: 0,
+    quantity: 1,
     expiry: "",
   });
 
-  //use to store errors
   const [errors, setErrors] = useState({
     name: "",
     quantity: "",
@@ -43,10 +52,10 @@ const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
   useEffect(() => {
     if (item) {
       setEditedItem(item);
+    } else {
+      setEditedItem({ name: "", quantity: 1, expiry: "" });
     }
   }, [item]);
-
-  if (!item) return null; //if there is no item, return null
 
   //ensure each field in the edit form is valid
   const validateForm = () => {
@@ -75,11 +84,10 @@ const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
+  const onSubmit = (e) => {
     e.preventDefault(); //prevent the default behavior of the form
     if (validateForm()) {
-      //if all fields valid only update item then
-      handleEdit(editedItem); //pass the item we edited to the handleEdit function which in turn passes to updateItem
+      handleSubmit(editedItem);
       handleClose();
     }
   };
@@ -91,14 +99,8 @@ const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
       open={open}
       onClose={handleClose}
       closeAfterTransition
-      slots={{
-        backdrop: Backdrop,
-      }}
-      slotProps={{
-        backdrop: {
-          timeout: 500,
-        },
-      }}
+      slots={{ backdrop: Backdrop }}
+      slotProps={{ backdrop: { timeout: 500 } }}
     >
       <Fade in={open}>
         <Box sx={style}>
@@ -106,11 +108,11 @@ const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
             id="transition-modal-title"
             variant={isMobile ? "h6" : "h5"} //smaller heading on mobile
             component="h2"
-            sx={{ color: "primary.main" }}
+            sx={{ color: "primary.main", mb: 2 }}
           >
-            Edit Pantry Item
+            {title}
           </Typography>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={onSubmit}>
             <TextField
               fullWidth
               label="Name"
@@ -143,25 +145,37 @@ const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
               label="Expiry"
               type="date"
               value={editedItem.expiry}
-              InputLabelProps={{
-                shrink: true,
-              }}
+              InputLabelProps={{ shrink: true }}
               onChange={(e) =>
-                setEditedItem({
-                  ...editedItem,
-                  expiry: e.target.value,
-                })
+                setEditedItem({ ...editedItem, expiry: e.target.value })
               }
               error={!!errors.expiry}
               helperText={errors.expiry}
-              inputProps={{
-                min: new Date().toISOString().split("T")[0], //date can only be today or later
-              }}
+              inputProps={{ min: new Date().toISOString().split("T")[0] }} //date can only be today or later
               margin="normal"
             />
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              Save Changes
-            </Button>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
+            >
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                sx={{ flex: 1, mr: showPhotoButton ? 1 : 0 }}
+              >
+                {item ? "Save Changes" : "Add Item"}
+              </Button>
+              {showPhotoButton && (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={onTakePhoto}
+                  startIcon={<FaCamera />}
+                >
+                  Take Photo
+                </Button>
+              )}
+            </Box>
           </form>
         </Box>
       </Fade>
@@ -169,4 +183,4 @@ const TransitionsModal = ({ open, handleClose, item, handleEdit }) => {
   );
 };
 
-export default TransitionsModal;
+export default ReusableModal;

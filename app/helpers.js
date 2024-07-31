@@ -12,15 +12,18 @@ import {
 import { db } from "@/firebase.js";
 
 //add items to the database
-export const addItem = async (e, newItem, setNewItem) => {
-  e.preventDefault();
-  if (newItem.name !== "" && newItem.quantity !== "0") {
-    await addDoc(collection(db, "items"), {
-      name: newItem.name.trim(),
-      quantity: newItem.quantity,
-      expiry: newItem.expiry,
-    });
-    setNewItem({ name: "", quantity: 1, expiry: "" });
+export const addItem = async (newItem, callback) => {
+  if (newItem.name !== "" && newItem.quantity !== 0) {
+    try {
+      await addDoc(collection(db, "items"), {
+        name: newItem.name.trim(),
+        quantity: newItem.quantity,
+        expiry: newItem.expiry,
+      });
+      if (callback) callback();
+    } catch (error) {
+      console.error("Error adding item: ", error);
+    }
   }
 };
 
@@ -44,15 +47,24 @@ export const getItems = async (setItems) => {
 
 //delete items from the database
 export const deleteItem = async (id) => {
-  await deleteDoc(doc(db, "items", id));
+  try {
+    await deleteDoc(doc(db, "items", id));
+  } catch (error) {
+    console.error("Error deleting item: ", error);
+  }
 };
 
 //update items in the database
-export const updateItem = async (item) => {
+export const updateItem = async (item, callback) => {
   const itemRef = doc(db, "items", item.id);
-  await updateDoc(itemRef, {
-    name: item.name,
-    quantity: item.quantity,
-    expiry: item.expiry,
-  });
+  try {
+    await updateDoc(itemRef, {
+      name: item.name,
+      quantity: item.quantity,
+      expiry: item.expiry,
+    });
+    if (callback) callback();
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
 };
