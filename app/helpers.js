@@ -13,17 +13,15 @@ import { db } from "@/firebase.js";
 
 //add items to the database
 export const addItem = async (newItem, callback) => {
-  if (newItem.name !== "" && newItem.quantity !== 0) {
-    try {
-      await addDoc(collection(db, "items"), {
-        name: newItem.name.trim(),
-        quantity: newItem.quantity,
-        expiry: newItem.expiry,
-      });
-      if (callback) callback();
-    } catch (error) {
-      console.error("Error adding item: ", error);
-    }
+  try {
+    await addDoc(collection(db, "items"), {
+      name: newItem.name.trim(),
+      quantity: newItem.quantity,
+      expiry: newItem.expiry,
+    });
+    if (callback) callback();
+  } catch (error) {
+    console.error("Error adding item: ", error);
   }
 };
 
@@ -56,8 +54,8 @@ export const deleteItem = async (id) => {
 
 //update items in the database
 export const updateItem = async (item, callback) => {
-  const itemRef = doc(db, "items", item.id);
   try {
+    const itemRef = doc(db, "items", item.id);
     await updateDoc(itemRef, {
       name: item.name,
       quantity: item.quantity,
@@ -65,6 +63,6 @@ export const updateItem = async (item, callback) => {
     });
     if (callback) callback();
   } catch (error) {
-    console.error("Error updating document: ", error);
+    console.error("Error updating item: ", error);
   }
 };

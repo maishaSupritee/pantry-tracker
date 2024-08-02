@@ -9,17 +9,8 @@ import Fade from "@mui/material/Fade";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { FaCamera } from "react-icons/fa";
 
-const ReusableModal = ({
-  open,
-  handleClose,
-  item,
-  handleSubmit,
-  title,
-  showPhotoButton = false,
-  onTakePhoto,
-}) => {
+const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
   const theme = useTheme(); //useTheme gives us access to breakpoints to determine screen size
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); //checks if the screen is mobile or smaller than sm
 
@@ -88,14 +79,11 @@ const ReusableModal = ({
     e.preventDefault(); //prevent the default behavior of the form
     if (validateForm()) {
       handleSubmit(editedItem);
-      handleClose();
     }
   };
 
   return (
     <Modal
-      aria-labelledby="transition-modal-title"
-      aria-describedby="transition-modal-description"
       open={open}
       onClose={handleClose}
       closeAfterTransition
@@ -161,20 +149,10 @@ const ReusableModal = ({
                 type="submit"
                 variant="contained"
                 color="primary"
-                sx={{ flex: 1, mr: showPhotoButton ? 1 : 0 }}
+                fullWidth
               >
                 {item ? "Save Changes" : "Add Item"}
               </Button>
-              {showPhotoButton && (
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={onTakePhoto}
-                  startIcon={<FaCamera />}
-                >
-                  Take Photo
-                </Button>
-              )}
             </Box>
           </form>
         </Box>
