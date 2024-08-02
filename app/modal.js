@@ -21,9 +21,8 @@ const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
     transform: "translate(-50%, -50%)",
     width: isMobile ? "90%" : 400, //make the modal 90% width (smaller) on mobile and 400px on desktop
     maxWidth: "100%",
-    bgcolor: "secondary.main",
+    bgcolor: "primary.main",
     borderRadius: 2,
-    border: "2px solid tertiary.main",
     boxShadow: 24,
     p: isMobile ? 2 : 4, //less padding on mobile
   };
@@ -82,6 +81,29 @@ const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
     }
   };
 
+  const textFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      "& fieldset": {
+        borderColor: "secondary.main",
+      },
+      "&:hover fieldset": {
+        borderColor: "tertiary.main",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "tertiary.main",
+      },
+    },
+    "& .MuiInputLabel-root": {
+      color: "secondary.main",
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "tertiary.main",
+    },
+    "& .MuiOutlinedInput-input": {
+      color: "secondary.main",
+    },
+  };
+
   return (
     <Modal
       open={open}
@@ -96,7 +118,7 @@ const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
             id="transition-modal-title"
             variant={isMobile ? "h6" : "h5"} //smaller heading on mobile
             component="h2"
-            sx={{ color: "primary.main", mb: 2 }}
+            sx={{ color: "secondary.main", mb: 2 }}
           >
             {title}
           </Typography>
@@ -108,6 +130,8 @@ const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
               onChange={(e) =>
                 setEditedItem({ ...editedItem, name: e.target.value })
               }
+              sx={textFieldSx}
+              InputLabelProps={{ shrink: true }}
               error={!!errors.name} //change the field and label to error state
               helperText={errors.name} //display error message
               margin="normal"
@@ -123,6 +147,8 @@ const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
                   quantity: Number(e.target.value),
                 })
               }
+              sx={textFieldSx}
+              InputLabelProps={{ shrink: true }}
               error={!!errors.quantity}
               helperText={errors.quantity}
               inputProps={{ min: 1 }} //quantity must be at least 1
@@ -137,6 +163,7 @@ const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
               onChange={(e) =>
                 setEditedItem({ ...editedItem, expiry: e.target.value })
               }
+              sx={textFieldSx}
               error={!!errors.expiry}
               helperText={errors.expiry}
               inputProps={{ min: new Date().toISOString().split("T")[0] }} //date can only be today or later
@@ -148,7 +175,7 @@ const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
               <Button
                 type="submit"
                 variant="contained"
-                color="primary"
+                color="tertiary"
                 fullWidth
               >
                 {item ? "Save Changes" : "Add Item"}

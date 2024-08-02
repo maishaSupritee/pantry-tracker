@@ -1,6 +1,14 @@
 "use client";
 
-import { Box, Typography, Paper, IconButton, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  IconButton,
+  Button,
+  Alert,
+  Tooltip,
+} from "@mui/material";
 import { IoAdd } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 import { useEffect, useState } from "react";
@@ -48,6 +56,35 @@ export default function Home() {
     deleteItem(id);
   };
 
+  const isExpiringWithinFiveDays = (expiryDate) => {
+    if (!expiryDate) return false; //if there is no expiry date, return false
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const differenceInTime = expiry.getTime() - today.getTime();
+    const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+    return differenceInDays <= 5 && differenceInDays >= 0; //if less than 5 days left till expiry, but not expired yet
+  };
+
+  const isExpired = (expiryDate) => {
+    if (!expiryDate) return false;
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    return expiry < today; //check if expiry date is before today
+  };
+
+  const getExpiryStatus = (expiryDate) => {
+    if (isExpired(expiryDate)) return "error";
+    if (isExpiringWithinFiveDays(expiryDate)) return "warning";
+    return "none";
+  };
+
+  const getExpiryMessage = (expiryDate) => {
+    if (isExpired(expiryDate)) return "Oh no! This item has expired!";
+    if (isExpiringWithinFiveDays(expiryDate))
+      return "Use this item quick! It's expiring within 5 days!";
+    return ""; //neither expired/expiring within 5 days then no message
+  };
+
   return (
     <Box
       component="main"
@@ -64,13 +101,20 @@ export default function Home() {
     >
       <Typography
         component="h1"
-        variant="h4"
+        variant="h3"
         sx={{
           mt: 3,
           mb: 2,
           fontFamily: "Inter, sans-serif",
           fontWeight: "bold",
           color: "secondary.main",
+          transform: "translateZ(0)",
+          transition: "transform 0.4s ease-out", //0.4s to move up and down
+          "&:hover": {
+            //hover effect to move up and down
+            transform: "translateY(-5px) translateZ(0)",
+          },
+          letterSpacing: "2px", //make the words spaced out
         }}
       >
         Pantry Tracker
@@ -94,100 +138,153 @@ export default function Home() {
             fontFamily: "Inter, sans-serif",
           }}
         >
-          Add new item to your pantry
+          Add a new item to your pantry
         </Typography>
         <Button
           variant="contained"
           onClick={() => handleOpenModal("add")}
           sx={{
-            minWidth: "48px",
-            minHeight: "48px",
+            minWidth: "40px",
+            minHeight: "40px",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             p: 0,
             borderRadius: "10px",
+            bgcolor: "secondary.main",
+            "&:hover": {
+              bgcolor: "tertiary.main",
+            },
           }}
         >
-          <IoAdd style={{ width: "32px", height: "32px" }} />
+          <IoAdd style={{ width: "32px", height: "32px", color: "white" }} />
         </Button>
       </Box>
 
       <Box sx={{ width: "100%", maxWidth: "600px" }}>
         {items !== null ? (
-          items.map((item) => (
-            <Box
-              key={item.id}
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 2,
-                alignItems: "center",
-              }}
-            >
-              <Paper
-                elevation={6}
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  p: 2,
-                  mb: 2,
-                  bgcolor: "secondary.main",
-                }}
+          items.map((item) => {
+            const expiryStatus = getExpiryStatus(item.expiry);
+            const expiryMessage = getExpiryMessage(item.expiry);
+
+            return (
+              <Tooltip //the component that lets us display some messages when we hover over an item
+                key={item.id}
+                title={
+                  expiryStatus !== "none" ? ( //if the item is expired or expiring within 5 days, display the message
+                    <Alert severity={expiryStatus} sx={{ m: -1 }}>
+                      {expiryMessage}
+                    </Alert>
+                  ) : (
+                    ""
+                  )
+                }
+                arrow //point to the element expiring/expired
+                placement="top"
               >
                 <Box
-                  sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
-                >
-                  <Typography
-                    variant="h6"
-                    color="primary.main"
-                    sx={{
-                      wordBreak: "break-word",
-                      mr: 2,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-                  </Typography>
-                  <Typography
-                    color="primary.main"
-                    sx={{
-                      fontSize: "0.75rem",
-                    }}
-                  >
-                    Expiry: {item.expiry !== "" ? item.expiry : "N/A"}
-                  </Typography>
-                </Box>
-                <Typography
-                  variant="h6"
-                  color="primary.main"
                   sx={{
-                    mr: 2,
-                    flexShrink: 0,
+                    display: "flex",
+                    flexDirection: "row",
+                    gap: 2,
+                    alignItems: "center",
                   }}
                 >
-                  {item.quantity}
-                </Typography>
-                <IconButton
-                  sx={{ flexShrink: 0 }}
-                  onClick={() => handleDeleteItem(item.id)}
-                >
-                  <MdDelete />
-                </IconButton>
-              </Paper>
+                  <Paper
+                    elevation={6}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      width: "100%",
+                      p: 2,
+                      mb: 2,
+                      bgcolor: "primary.main",
+                      "&:hover": {
+                        borderColor: "tertiary.main",
+                        borderWidth: 2,
+                        borderStyle: "solid",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        flexGrow: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        color="secondary.main"
+                        sx={{
+                          wordBreak: "break-word", //line break instead of overflowing component
+                          mr: 2,
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: "inline-block",
+                          bgcolor:
+                            expiryStatus !== "none"
+                              ? `${expiryStatus}.main` //matching colors of warning or error with alert boxes
+                              : "transparent",
+                          p: expiryStatus !== "none" ? 0.5 : 0,
+                          borderRadius: 1,
+                          width: "fit-content",
+                        }}
+                      >
+                        <Typography
+                          color={
+                            expiryStatus !== "none"
+                              ? "primary.main"
+                              : "secondary.main"
+                          }
+                          sx={{
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          Expiry: {item.expiry !== "" ? item.expiry : "N/A"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Typography
+                      variant="h6"
+                      color="secondary.main"
+                      sx={{
+                        mr: 2,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.quantity}
+                    </Typography>
+                    <IconButton
+                      sx={{ flexShrink: 0 }}
+                      onClick={() => handleDeleteItem(item.id)}
+                    >
+                      <MdDelete />
+                    </IconButton>
+                  </Paper>
 
-              <IconButton
-                size="large"
-                sx={{ borderRadius: "100%", height: "60%" }}
-                onClick={() => handleOpenModal("edit", item)}
-              >
-                <CiEdit />
-              </IconButton>
-            </Box>
-          ))
+                  <IconButton
+                    size="large"
+                    sx={{
+                      borderRadius: "100%",
+                      height: "60%",
+                      color: "tertiary.main",
+                    }}
+                    onClick={() => handleOpenModal("edit", item)}
+                  >
+                    <CiEdit />
+                  </IconButton>
+                </Box>
+              </Tooltip>
+            );
+          })
         ) : (
           <ItemSkeletons />
         )}
