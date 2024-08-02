@@ -7,9 +7,10 @@ import { useEffect, useState } from "react";
 import { addItem, getItems, deleteItem, updateItem } from "./helpers";
 import { CiEdit } from "react-icons/ci";
 import ReusableModal from "./modal";
+import ItemSkeletons from "./skeletons";
 
 export default function Home() {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [editingItem, setEditingItem] = useState(null);
@@ -113,79 +114,83 @@ export default function Home() {
       </Box>
 
       <Box sx={{ width: "100%", maxWidth: "600px" }}>
-        {items.map((item) => (
-          <Box
-            key={item.id}
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              gap: 2,
-              alignItems: "center",
-            }}
-          >
-            <Paper
-              elevation={6}
+        {items !== null ? (
+          items.map((item) => (
+            <Box
+              key={item.id}
               sx={{
                 display: "flex",
                 flexDirection: "row",
-                justifyContent: "space-between",
+                gap: 2,
                 alignItems: "center",
-                width: "100%",
-                p: 2,
-                mb: 2,
-                bgcolor: "secondary.main",
               }}
             >
-              <Box
-                sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+              <Paper
+                elevation={6}
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  width: "100%",
+                  p: 2,
+                  mb: 2,
+                  bgcolor: "secondary.main",
+                }}
               >
+                <Box
+                  sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+                >
+                  <Typography
+                    variant="h6"
+                    color="primary.main"
+                    sx={{
+                      wordBreak: "break-word",
+                      mr: 2,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                  </Typography>
+                  <Typography
+                    color="primary.main"
+                    sx={{
+                      fontSize: "0.75rem",
+                    }}
+                  >
+                    Expiry: {item.expiry !== "" ? item.expiry : "N/A"}
+                  </Typography>
+                </Box>
                 <Typography
                   variant="h6"
                   color="primary.main"
                   sx={{
-                    wordBreak: "break-word",
                     mr: 2,
-                    fontWeight: "bold",
+                    flexShrink: 0,
                   }}
                 >
-                  {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                  {item.quantity}
                 </Typography>
-                <Typography
-                  color="primary.main"
-                  sx={{
-                    fontSize: "0.75rem",
-                  }}
+                <IconButton
+                  sx={{ flexShrink: 0 }}
+                  onClick={() => handleDeleteItem(item.id)}
                 >
-                  Expiry: {item.expiry !== "" ? item.expiry : "N/A"}
-                </Typography>
-              </Box>
-              <Typography
-                variant="h6"
-                color="primary.main"
-                sx={{
-                  mr: 2,
-                  flexShrink: 0,
-                }}
-              >
-                {item.quantity}
-              </Typography>
-              <IconButton
-                sx={{ flexShrink: 0 }}
-                onClick={() => handleDeleteItem(item.id)}
-              >
-                <MdDelete />
-              </IconButton>
-            </Paper>
+                  <MdDelete />
+                </IconButton>
+              </Paper>
 
-            <IconButton
-              size="large"
-              sx={{ borderRadius: "100%", height: "60%" }}
-              onClick={() => handleOpenModal("edit", item)}
-            >
-              <CiEdit />
-            </IconButton>
-          </Box>
-        ))}
+              <IconButton
+                size="large"
+                sx={{ borderRadius: "100%", height: "60%" }}
+                onClick={() => handleOpenModal("edit", item)}
+              >
+                <CiEdit />
+              </IconButton>
+            </Box>
+          ))
+        ) : (
+          <ItemSkeletons />
+        )}
       </Box>
 
       <ReusableModal
