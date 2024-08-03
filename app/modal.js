@@ -128,7 +128,10 @@ const ReusableModal = ({ open, handleClose, item, handleSubmit, title }) => {
               label="Name"
               value={editedItem.name}
               onChange={(e) =>
-                setEditedItem({ ...editedItem, name: e.target.value })
+                setEditedItem({
+                  ...editedItem,
+                  name: e.target.value.toLowerCase(),
+                })
               }
               sx={textFieldSx}
               InputLabelProps={{ shrink: true }}

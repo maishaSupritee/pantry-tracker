@@ -1,13 +1,16 @@
 import {
   collection,
   addDoc,
-  getDoc,
+  getDocs,
   querySnapshot,
   query,
   onSnapshot,
   deleteDoc,
   doc,
   updateDoc,
+  startAt,
+  endAt,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "@/firebase.js";
 
@@ -64,5 +67,30 @@ export const updateItem = async (item, callback) => {
     if (callback) callback();
   } catch (error) {
     console.error("Error updating item: ", error);
+  }
+};
+
+//search items in the database by name
+export const searchItems = async (searchTerm, setItems) => {
+  const searchTermLower = searchTerm.toLowerCase();
+  console.log("Search term:", searchTermLower);
+  const q = query(
+    collection(db, "items"),
+    orderBy("name"),
+    startAt(searchTermLower),
+    endAt(searchTermLower + "\uf8ff")
+  );
+
+  try {
+    const querySnapshot = await getDocs(q);
+    let itemsArr = [];
+    querySnapshot.forEach((doc) => {
+      itemsArr.push({ ...doc.data(), id: doc.id });
+    });
+    console.log("Items found:", itemsArr);
+    setItems(itemsArr);
+  } catch (error) {
+    console.error("Error searching items: ", error);
+    setItems([]);
   }
 };
