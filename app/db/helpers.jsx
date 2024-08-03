@@ -76,9 +76,9 @@ export const searchItems = async (searchTerm, setItems) => {
   console.log("Search term:", searchTermLower);
   const q = query(
     collection(db, "items"),
-    orderBy("name"),
-    startAt(searchTermLower),
-    endAt(searchTermLower + "\uf8ff")
+    orderBy("name"), //sort items by name
+    startAt(searchTermLower), //start searching from the beginning of the search term
+    endAt(searchTermLower + "\uf8ff") //end searching at the end of the search term
   );
 
   try {
@@ -87,7 +87,6 @@ export const searchItems = async (searchTerm, setItems) => {
     querySnapshot.forEach((doc) => {
       itemsArr.push({ ...doc.data(), id: doc.id });
     });
-    console.log("Items found:", itemsArr);
     setItems(itemsArr);
   } catch (error) {
     console.error("Error searching items: ", error);

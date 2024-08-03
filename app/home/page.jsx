@@ -21,7 +21,7 @@ import {
   deleteItem,
   updateItem,
   searchItems,
-} from "./helpers";
+} from "../db/helpers";
 import { CiEdit } from "react-icons/ci";
 import ReusableModal from "./modal";
 import ItemSkeletons from "./skeletons";
