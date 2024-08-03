@@ -23,8 +23,8 @@ import {
   searchItems,
 } from "../db/helpers";
 import { CiEdit } from "react-icons/ci";
-import ReusableModal from "./modal";
-import ItemSkeletons from "./skeletons";
+import ReusableModal from "../components/modal";
+import ItemSkeletons from "../components/skeletons";
 
 export default function Home() {
   const [items, setItems] = useState(null); //all items in the pantry
@@ -170,7 +170,7 @@ export default function Home() {
           letterSpacing: "2px", //make the words spaced out
         }}
       >
-        Pantry Tracker
+        Pantry Buddy
       </Typography>
 
       <Box
